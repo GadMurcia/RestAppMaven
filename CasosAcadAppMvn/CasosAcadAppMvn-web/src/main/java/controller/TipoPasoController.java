@@ -5,6 +5,7 @@
  */
 package controller;
 
+import acadSocket.casosAcadClient;
 import casos.acad.acceso.TipoPasoFacadeLocal;
 import java.io.Serializable;
 import javax.inject.Named;
@@ -12,7 +13,16 @@ import javax.faces.view.ViewScoped;
 import java.util.List;
 import javax.ejb.EJB;
 import casos.acad.casosacaddatalibmvn.TipoPaso;
+import java.awt.MenuItem;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.faces.event.ActionEvent;
+import javax.websocket.ContainerProvider;
+import javax.websocket.DeploymentException;
+import javax.websocket.WebSocketContainer;
 import org.primefaces.event.SelectEvent;
 
 /**
@@ -75,6 +85,7 @@ public class TipoPasoController implements Serializable {
         this.tipoPasoFacade.crear(this.tp);
         this.tp = new TipoPaso();
         this.editando = false;
+        socket("Agregar");
     }
 
     public String borrar() {
@@ -85,6 +96,7 @@ public class TipoPasoController implements Serializable {
             System.out.println("no se puede eliminar si no hay seleccionado");
         }
         this.editando = false;
+        socket("borrarr");
         return "borrar";
 
     }
@@ -103,6 +115,7 @@ public class TipoPasoController implements Serializable {
             System.out.println("no se puede eliminar si no hay seleccionado");
         }
         this.editando = false;
+        socket("Editar");
         return "index";
     }
     
@@ -112,5 +125,22 @@ public class TipoPasoController implements Serializable {
         }else{
             crud=true;
         }
+    }
+
+    private void socket(String accion) {
+       casosAcadClient client= new casosAcadClient();
+        WebSocketContainer container = ContainerProvider.getWebSocketContainer();
+        try {
+            container.connectToServer(client, new URI("ws://localhost:8080/CasosAcadAppMvn-web/casosacadserver"));
+            client.enviarmensaje("todos::"+accion);
+            client.cerrarconexión();
+        } catch (URISyntaxException ex) {
+            Logger.getLogger(TipoPasoController.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(TipoPasoController.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (DeploymentException ex) {
+            Logger.getLogger(TipoPasoController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
     }
 }
